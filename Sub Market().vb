@@ -3,7 +3,7 @@ Sub Market()
 dim CurrentTicker as String, NextTicker as String
 dim TotalVolume as LongLong
 dim RowNum as Long, RowNum_open as Long, SummaryRow as Integer, LastRow as Long
-dim firstOpen as Integer, PChange as Integer
+dim firstOpen as Double, PChange as Double
 
 For each ws in Worksheets 
 
@@ -20,7 +20,7 @@ For each ws in Worksheets
 
     firstOpen=ws.cells(RowNum_open,3).value
     For RowNum = 2 to LastRow
-
+        
         'Finding ticker transition
         CurrentTicker= ws.cells(RowNum,1).value
         NextTicker=ws.cells(RowNum+1,1).value
@@ -28,19 +28,26 @@ For each ws in Worksheets
         'Statistical calculations
         TotalVolume=ws.cells(RowNum,7).value+TotalVolume
         YChange=ws.cells(RowNum,6).value-firstOpen
-        PChange=(ws.cells(RowNum,6)-firstOpen)/firstOpen
+        PChange=YChange/firstOpen
 
         If CurrentTicker <> NextTicker Then
 
             'Fill in summary table for completed ticker data set
             ws.cells(SummaryRow,9).value=CurrentTicker
             ws.cells(SummaryRow,10).value=YChange
+                'format
+                If YChange > 0 Then 
+                    ws.cells(SummaryRow,10).interior.colorIndex=4 'green
+                Else ws.cells(SummaryRow,10).interior.colorIndex=3 'red
+                End if
             ws.cells(SummaryRow,11).value=PChange
+                'format
+                ws.cells(SummaryRow,11).NumberFormat="0.00%"
             ws.cells(SummaryRow,12).value=TotalVolume
-            
-            'thankfully we have a list sorted alphabetically and chronologically
+                       
             'first row of new ticker is the <open> price
             RowNum_open=RowNum+1
+            firstOpen=ws.cells(RowNum_open,3).value
 
             'prepare summary row
             SummaryRow=SummaryRow+1
@@ -48,11 +55,23 @@ For each ws in Worksheets
             'reset Total Volume for ticker
             TotalVolume=0
         end if        
-    Next RowNum 
 
-    'formatting before changing to next ws
-    ws.range("K1:K"&LastRow).NumberFormat="0%"
+    Next RowNum 
     
+    Set Summary_range = ws.range("K2:K"&SummaryRow)
+        ws.cells(1,15).value="Greatest % Decrease:"
+        ws.cells(1,16).value=Application.WorksheetFunction.Min(Summary_range)
+            ws.cells(1,16).NumberFormat="0.00%"
+
+        ws.cells(2,15).value="Greatest % Increase:"
+        ws.cells(2,16).value=Application.WorksheetFunction.Max(Summary_range)
+            ws.cells(2,16).NumberFormat="0.00%"
+
+    Set Vol_Summary_range = ws.range("L2:L"&SummaryRow)
+        ws.cells(3,15).value="Greatest Volume:"
+        ws.cells(3,16).value=Application.WorksheetFunction.Max(Vol_Summary_range)
+    
+
 next ws 
 
 End Sub
