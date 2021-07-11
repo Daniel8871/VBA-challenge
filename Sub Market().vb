@@ -1,9 +1,9 @@
 Sub Market()
 
 dim CurrentTicker as String, NextTicker as String
-dim TotalVolume as LongLong
+dim TotalVolume as LongLong, Vol_Sum as LongLong, P_Sum as Double
 dim RowNum as Long, RowNum_open as Long, SummaryRow as Integer, LastRow as Long
-dim firstOpen as Double, PChange as Double
+dim firstOpen as Double, PChange as Double, YChange as Double
 
 For each ws in Worksheets 
 
@@ -60,18 +60,21 @@ For each ws in Worksheets
     
     Set Summary_range = ws.range("K2:K"&SummaryRow)
         ws.cells(1,15).value="Greatest % Decrease:"
-        ws.cells(1,16).value=Application.WorksheetFunction.Min(Summary_range)
+        P_Sum=Application.WorksheetFunction.Min(Summary_range)
+        ws.cells(1,16).value=P_Sum
             ws.cells(1,16).NumberFormat="0.00%"
 
         ws.cells(2,15).value="Greatest % Increase:"
-        ws.cells(2,16).value=Application.WorksheetFunction.Max(Summary_range)
+        P_Sum=Application.WorksheetFunction.Max(Summary_range)
+        ws.cells(2,16).value=P_Sum
             ws.cells(2,16).NumberFormat="0.00%"
 
     Set Vol_Summary_range = ws.range("L2:L"&SummaryRow)
         ws.cells(3,15).value="Greatest Volume:"
-        ws.cells(3,16).value=Application.WorksheetFunction.Max(Vol_Summary_range)
-    
-
+        Vol_Sum=Application.WorksheetFunction.Max(Vol_Summary_range)
+            ws.cells(3,16).value=Vol_Sum
+    Vol_Sum=0
+    P_Sum=0
 next ws 
 
 End Sub
