@@ -2,7 +2,7 @@ Sub Market()
 
 dim CurrentTicker as String, NextTicker as String
 dim TotalVolume as LongLong, Vol_Sum as LongLong, P_Sum as Double
-dim RowNum as Long, RowNum_open as Long, SummaryRow as Integer, LastRow as Long
+dim RowNum as Long, RowNum_open as Long, SummaryRow as Long, LastRow as Long
 dim firstOpen as Double, PChange as Double, YChange as Double
 
 For each ws in Worksheets 
@@ -19,6 +19,7 @@ For each ws in Worksheets
     ws.cells(1,12).value="Total Stock Volume"
 
     firstOpen=ws.cells(RowNum_open,3).value
+    
     For RowNum = 2 to LastRow
         
         'Finding ticker transition
@@ -26,34 +27,46 @@ For each ws in Worksheets
         NextTicker=ws.cells(RowNum+1,1).value
 
         'Statistical calculations
-        TotalVolume=ws.cells(RowNum,7).value+TotalVolume
-        YChange=ws.cells(RowNum,6).value-firstOpen
-        PChange=YChange/firstOpen
-
+        TotalVolume=CLng(ws.cells(RowNum,7).value)+TotalVolume
+        YChange=CLng(ws.cells(RowNum,6).value)-firstOpen
+        
         If CurrentTicker <> NextTicker Then
-
+     
             'Fill in summary table for completed ticker data set
             ws.cells(SummaryRow,9).value=CurrentTicker
+            
+            'Year Change
+            YChange=ws.cells(RowNum,6).value-firstOpen            
             ws.cells(SummaryRow,10).value=YChange
                 'format
+                ws.cells(SummaryRow,10).interior.colorIndex=3 'red
                 If YChange > 0 Then 
                     ws.cells(SummaryRow,10).interior.colorIndex=4 'green
-                Else ws.cells(SummaryRow,10).interior.colorIndex=3 'red
                 End if
-            ws.cells(SummaryRow,11).value=PChange
+            
+            'Percent Change
+            If firstOpen<=0 Then
+                ws.cells(SummaryRow,11).value="N/A"
+            Else ws.cells(SummaryRow,11).value=(YChange/firstOpen)
                 'format
                 ws.cells(SummaryRow,11).NumberFormat="0.00%"
-            ws.cells(SummaryRow,12).value=TotalVolume
-                       
-            'first row of new ticker is the <open> price
-            RowNum_open=RowNum+1
-            firstOpen=ws.cells(RowNum_open,3).value
+            End if
 
+            'Total Volume
+            TotalVolume=ws.cells(RowNum,7).value+TotalVolume
+            ws.cells(SummaryRow,12).value=TotalVolume
+                                
             'prepare summary row
             SummaryRow=SummaryRow+1
 
             'reset Total Volume for ticker
             TotalVolume=0
+
+            'first row of new ticker is the <open> price
+            ' RowNum_open=RowNum+1
+            ' firstOpen=ws.cells(RowNum_open,3).value
+            firstOpen=CLng(ws.cells(RowNum+1,3).value)
+            
         end if        
 
     Next RowNum 
